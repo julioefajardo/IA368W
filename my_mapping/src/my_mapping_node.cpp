@@ -17,12 +17,13 @@ using namespace Eigen;
 
 #define IDEAL
 
-// 8 X 8 meters map, cell -> 80 mm
-#define CELL_SIZE	0.08
-#define SIZE		100
-
 boost::mutex pose_mutex;
 boost::mutex scan_mutex;
+
+// 8 X 8 meters map, cell -> 80 mm
+const double  CELL_SIZE	= 0.08;
+const int SIZE = 100;
+
 
 const double angle_increment = 0.0174533;	
 const unsigned int n_angles = 181; 
@@ -88,12 +89,12 @@ int main(int argc, char** argv){
   mapa.info.resolution = CELL_SIZE;         
   mapa.info.width      = SIZE;          
   mapa.info.height     = SIZE;          
-  mapa.info.origin.position.x = -(SIZE) / 2 * CELL_SIZE;
-  mapa.info.origin.position.y = -(SIZE) / 2 * CELL_SIZE;
+  mapa.info.origin.position.x = -(SIZE) / 2.0 * CELL_SIZE;
+  mapa.info.origin.position.y = -(SIZE) / 2.0 * CELL_SIZE;
   mapa.info.origin.orientation.w = 1.0;  
   mapa.data.assign(SIZE*SIZE, -1);
 
-  for(int i=0; i<n_angles; i++) phi[i] = -M_PI/2 + angle_increment*i;
+  for(int i=0; i<n_angles; i++) phi[i] = -M_PI/2.0 + angle_increment*i;
   sigma << 0.005, 0.0,
          0.0 , 0.0005;
   lo = log(Pprior/(1.0-Pprior));
@@ -109,8 +110,8 @@ int main(int argc, char** argv){
       mu(1) = phi[k];
       for(int j=0; j<SIZE; j++){
         for(int i=0; i<SIZE; i++){
-          double xi = (i*CELL_SIZE + CELL_SIZE/2) - ((SIZE/2)*CELL_SIZE);
-          double yj = (j*CELL_SIZE + CELL_SIZE/2) - ((SIZE/2)*CELL_SIZE); 
+          double xi = (i*CELL_SIZE + CELL_SIZE/2.0) - ((SIZE/2.0)*CELL_SIZE);
+          double yj = (j*CELL_SIZE + CELL_SIZE/2.0) - ((SIZE/2.0)*CELL_SIZE); 
           boost::unique_lock<boost::mutex> scoped_lock(pose_mutex);
           cellp(0) = sqrt((xi-pose(0))*(xi-pose(0)) + (yj-pose(1))*(yj-pose(1)));	// radius (r)
           cellp(1) = atan2((yj-pose(1)), (xi-pose(0))) - pose(2);			// angle  (b)	
@@ -140,7 +141,7 @@ int main(int argc, char** argv){
       for(int i=0; i<SIZE; i++){
         if(mmapa(i,j)>abs(0.01)) Prob = -1;
         else Prob = (100 * (1 - (1 / (1 + exp( mmapa(i,j) ) ) ) ) );
-        mapa.data[i+j*100] = (int8_t)Prob;  
+        mapa.data[i+j*SIZE] = (int8_t)Prob;  
       } 
     }
     map_pub.publish(mapa);
