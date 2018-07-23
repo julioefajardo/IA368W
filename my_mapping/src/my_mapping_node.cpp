@@ -52,7 +52,7 @@ Vector2f delta;
 double P;
 const double Pocc   = 0.8;
 const double Pfree  = 0.2;
-const double Pprior = 0.45; //trying with 0.4 instead 0.5
+const double Pprior = 0.45; //trying with 0.4, 0.45 instead 0.5
 double K = 0.08;
 double invSen;
 double lo;
@@ -139,9 +139,11 @@ int main(int argc, char** argv){
     }    
     for(int j=0; j<SIZE; j++){
       for(int i=0; i<SIZE; i++){
-        if(mmapa(i,j)>abs(0.01)) Prob = -1;
-        else Prob = (100 * (1 - (1 / (1 + exp( mmapa(i,j) ) ) ) ) );
-        mapa.data[i+j*SIZE] = (int8_t)Prob;  
+        //if(mmapa(i,j)>abs(0.01)) Prob = -1;
+        //else Prob = (100 * (1 - (1 / (1 + exp( mmapa(i,j) ) ) ) ) );
+        Prob = (100 * (1 - (1 / (1 + exp( mmapa(i,j) ) ) ) ) ); 
+        if((Prob>=48)&&(Prob<=52)) mapa.data[i+j*SIZE] = -1; 
+        else mapa.data[i+j*SIZE] = (int8_t)Prob;  
       } 
     }
     map_pub.publish(mapa);
